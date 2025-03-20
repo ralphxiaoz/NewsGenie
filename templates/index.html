@@ -1,0 +1,302 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSS News Feed</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+            background-color: #f8f9fa;
+        }
+        .news-card {
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .card-footer {
+            background-color: white;
+            border-top: none;
+        }
+        #loading {
+            display: none;
+        }
+        #claude-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 40%;
+            height: 100%;
+            background-color: white;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        @media (max-width: 768px) {
+            #claude-container {
+                width: 100%;
+                height: 50%;
+                top: auto;
+                bottom: 0;
+                box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            }
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+        #api-key-container {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-12 text-center">
+                <h1>RSS News Feed</h1>
+                <p>Search for the latest news by keyword</p>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="input-group mb-3">
+                            <input type="text" id="keyword" class="form-control" placeholder="Enter keywords to search..." aria-label="Search keywords">
+                            <button class="btn btn-primary" type="button" id="search-btn">Search</button>
+                        </div>
+                        <div id="api-key-container">
+                            <div class="input-group">
+                                <input type="password" id="api-key" class="form-control" placeholder="Enter Claude API Key (for analysis)" aria-label="API Key">
+                                <button class="btn btn-outline-secondary" type="button" id="toggle-api">Show</button>
+                            </div>
+                            <small class="text-muted">Your API key is stored in your browser only and never sent to our servers unless you analyze an article.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-12 text-center" id="loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Searching news feeds...</p>
+            </div>
+        </div>
+        
+        <div class="row" id="results-container">
+            <!-- Results will be loaded here -->
+        </div>
+    </div>
+    
+    <!-- Claude Analysis Panel -->
+    <div id="claude-container">
+        <span class="close-btn" id="close-claude">&times;</span>
+        <h3>Claude Analysis</h3>
+        <div id="claude-loading" class="text-center" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Analyzing with Claude...</p>
+        </div>
+        <div id="claude-result"></div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Save API key to local storage
+            const apiKeyInput = document.getElementById('api-key');
+            const savedApiKey = localStorage.getItem('claude_api_key');
+            if (savedApiKey) {
+                apiKeyInput.value = savedApiKey;
+            }
+            
+            apiKeyInput.addEventListener('change', function() {
+                localStorage.setItem('claude_api_key', this.value);
+            });
+            
+            // Toggle API key visibility
+            document.getElementById('toggle-api').addEventListener('click', function() {
+                const apiKeyInput = document.getElementById('api-key');
+                if (apiKeyInput.type === 'password') {
+                    apiKeyInput.type = 'text';
+                    this.innerText = 'Hide';
+                } else {
+                    apiKeyInput.type = 'password';
+                    this.innerText = 'Show';
+                }
+            });
+            
+            // Search button click handler
+            document.getElementById('search-btn').addEventListener('click', function() {
+                searchNews();
+            });
+            
+            // Enter key press in search box
+            document.getElementById('keyword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchNews();
+                }
+            });
+            
+            // Close Claude panel
+            document.getElementById('close-claude').addEventListener('click', function() {
+                document.getElementById('claude-container').style.display = 'none';
+            });
+        });
+        
+        function searchNews() {
+            const keyword = document.getElementById('keyword').value.trim();
+            
+            if (!keyword) {
+                alert('Please enter a keyword to search');
+                return;
+            }
+            
+            // Show loading indicator
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results-container').innerHTML = '';
+            
+            // Make API request
+            fetch('/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ keyword: keyword }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading indicator
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+                
+                displayResults(data.results);
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                alert('Error searching news: ' + error);
+            });
+        }
+        
+        function displayResults(results) {
+            const container = document.getElementById('results-container');
+            
+            if (results.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center"><p>No results found. Try different keywords.</p></div>';
+                return;
+            }
+            
+            results.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'col-md-6 col-lg-4 mb-4';
+                card.innerHTML = `
+                    <div class="card news-card">
+                        <div class="card-body">
+                            <h5 class="card-title">${item.title}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">${item.source}</h6>
+                            <p class="card-text">${item.description || 'No description available'}</p>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="${item.link}" target="_blank" class="btn btn-sm btn-outline-primary">Read More</a>
+                                <button class="btn btn-sm btn-outline-secondary analyze-btn" data-content="${encodeURIComponent(JSON.stringify(item))}">Analyze with Claude</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            // Add event listeners to analyze buttons
+            document.querySelectorAll('.analyze-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const itemData = JSON.parse(decodeURIComponent(this.getAttribute('data-content')));
+                    analyzeWithClaude(itemData);
+                });
+            });
+        }
+        
+        function analyzeWithClaude(item) {
+            const apiKey = document.getElementById('api-key').value;
+            
+            if (!apiKey) {
+                alert('Please enter your Claude API key to analyze articles');
+                return;
+            }
+            
+            // Prepare content for analysis
+            const content = `
+                Title: ${item.title}
+                Source: ${item.source}
+                Published: ${item.published}
+                
+                ${item.content || item.description || 'No content available'}
+                
+                URL: ${item.link}
+            `;
+            
+            // Show Claude container and loading
+            document.getElementById('claude-container').style.display = 'block';
+            document.getElementById('claude-loading').style.display = 'block';
+            document.getElementById('claude-result').innerHTML = '';
+            
+            // Send to server for Claude analysis
+            fetch('/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    api_key: apiKey,
+                    content: content
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('claude-loading').style.display = 'none';
+                
+                if (data.error) {
+                    document.getElementById('claude-result').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                    return;
+                }
+                
+                // Display Claude's analysis
+                document.getElementById('claude-result').innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            Article: ${item.title}
+                        </div>
+                        <div class="card-body">
+                            <p>${data.analysis}</p>
+                        </div>
+                    </div>
+                `;
+            })
+            .catch(error => {
+                document.getElementById('claude-loading').style.display = 'none';
+                document.getElementById('claude-result').innerHTML = `<div class="alert alert-danger">Error analyzing article: ${error}</div>`;
+            });
+        }
+    </script>
+</body>
+</html>
