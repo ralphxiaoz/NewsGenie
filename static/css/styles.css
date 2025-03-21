@@ -1,0 +1,328 @@
+/* Main styles for News Genie application */
+
+.story-card {
+    margin-bottom: 15px;
+    transition: transform 0.3s;
+    border-left: 4px solid #0d6efd;
+}
+.story-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+.card-body {
+    padding: 1.25rem;
+}
+.card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+.card-title {
+    margin-bottom: 0;
+    font-weight: 600;
+}
+.card-date {
+    font-size: 0.85rem;
+    color: #6c757d;
+    white-space: nowrap;
+    margin-left: 15px;
+}
+.card-source {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0.75rem;
+}
+.card-content-row {
+    display: flex;
+    align-items: flex-start;
+}
+.card-text {
+    color: #555;
+    font-size: 1rem;
+    line-height: 1.4;
+    margin-bottom: 0;
+    flex-grow: 1;
+    padding-right: 20px;
+}
+.card-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    min-width: 100px;
+}
+.card-actions .btn {
+    margin-right: 8px;
+}
+.card-actions .btn:last-child {
+    margin-right: 0;
+}
+
+/* Add fadeIn animation for feed items */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Feed item styling */
+.feed-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    border-left: 3px solid #0d6efd;
+    transition: all 0.3s ease;
+}
+
+.feed-item:hover {
+    background-color: #e9ecef;
+}
+
+.feed-item strong {
+    font-size: 14px;
+    color: #212529;
+}
+
+.feed-item .text-muted {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 2px;
+}
+
+.feed-item .remove-feed {
+    margin-left: 12px;
+    transition: all 0.2s ease;
+}
+
+.loading-spinner {
+    display: none !important;
+    text-align: center;
+    padding: 20px;
+}
+#initialLoadingSpinner {
+    display: none !important;
+}
+#feedsList {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Search-specific styles */
+#searchResults .alert {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    border-radius: 6px;
+}
+
+#searchResults .alert-info {
+    background-color: #e8f4fd;
+    border-left: 4px solid #0d6efd;
+    color: #084298;
+}
+
+#searchResults .alert-success {
+    background-color: #d1e7dd;
+    border-left: 4px solid #198754;
+    color: #0f5132;
+}
+
+#searchResults .alert-warning {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    color: #856404;
+}
+
+#searchResults .alert-danger {
+    background-color: #f8d7da;
+    border-left: 4px solid #dc3545;
+    color: #842029;
+}
+
+/* Filter styles */
+#filterContainer {
+    padding: 15px;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    margin-bottom: 20px;
+}
+
+.filter-btn {
+    border-radius: 20px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    position: relative;
+    padding-right: 30px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+.filter-btn .badge {
+    border-radius: 50%;
+    margin-left: 6px;
+    font-size: 0.75rem;
+}
+
+.filter-btn .remove-filter {
+    font-size: 1.1rem;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.5;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.filter-btn .remove-filter:hover {
+    opacity: 1;
+}
+
+.filter-btn.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
+.filter-btn.active .badge {
+    background-color: white;
+    color: #0d6efd;
+}
+
+#newFilterInput {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#addFilterBtn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Feed description styling */
+.feed-description-container {
+    margin-top: 8px;
+    margin-bottom: 4px;
+}
+
+.feed-description {
+    font-size: 13px;
+    border-radius: 4px 0 0 4px;
+}
+
+.save-description {
+    font-size: 13px;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Feed filter styles */
+.feed-filter-list {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 8px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    margin-top: 10px;
+}
+
+.feed-filter-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 6px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    margin-bottom: 4px;
+}
+
+.feed-filter-checkbox {
+    margin-top: 5px;
+    margin-right: 8px;
+    min-width: 16px;
+}
+
+.feed-filter-item:hover {
+    background-color: #e9ecef;
+}
+
+.feed-filter-label {
+    padding-top: 2px;
+    padding-left: 4px;
+    line-height: 1.3;
+}
+
+.feed-title {
+    font-weight: 500;
+}
+
+.feed-filter-description-inline {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-left: 3px;
+}
+
+/* Keyword filter styles - restored */
+#filterContainer {
+    padding: 15px;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    margin-bottom: 20px;
+}
+
+.filter-input-group {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+#newFilterInput {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#addFilterBtn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.filter-btn {
+    border-radius: 20px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    position: relative;
+    padding-right: 30px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+.filter-btn .badge {
+    border-radius: 50%;
+    margin-left: 6px;
+    font-size: 0.75rem;
+}
+
+.filter-btn .remove-filter {
+    font-size: 1.1rem;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.5;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.filter-btn .remove-filter:hover {
+    opacity: 1;
+}
+
+.filter-btn.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
+.filter-btn.active .badge {
+    background-color: white;
+    color: #0d6efd;
+} 

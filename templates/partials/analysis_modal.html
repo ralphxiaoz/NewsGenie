@@ -1,0 +1,29 @@
+<!-- Analysis Modal -->
+<div class="modal fade" id="analysisModal" tabindex="-1" aria-labelledby="analysisModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="analysisModalLabel">Article Analysis</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="anthropicApiKey" class="form-label">Claude API Key</label>
+                    <input type="password" class="form-control" id="anthropicApiKey" placeholder="Enter your Anthropic API key">
+                </div>
+                <div id="analysisContent">
+                    <div class="d-flex justify-content-center" id="analysisLoadingSpinner" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Analyzing...</span>
+                        </div>
+                    </div>
+                    <div id="analysisResult"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="analyzeButton">Analyze</button>
+            </div>
+        </div>
+    </div>
+</div> 

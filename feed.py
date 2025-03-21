@@ -97,6 +97,7 @@ def add_feed(url):
     feeds.append({
         'url': url,
         'title': title or url,
+        'description': '',  # Add empty description field
         'added_date': time.strftime('%Y-%m-%d %H:%M:%S')
     })
     
@@ -196,7 +197,7 @@ def process_entry(entry, feed_url, feed_title):
         logger.error(f"Error processing entry from {feed_url}: {str(e)}", exc_info=True)
         return None
 
-def get_feed_stories(page=1, items_per_page=None):
+def get_feed_stories(page=1, items_per_page=None, selected_feeds=None):
     """Get stories from all feeds with pagination"""
     if items_per_page is None:
         items_per_page = PAGINATION['stories_per_page']
@@ -211,6 +212,12 @@ def get_feed_stories(page=1, items_per_page=None):
     
     for feed_data in feeds:
         feed_url = feed_data['url']
+        
+        # Skip this feed if it's not in the selected feeds
+        if selected_feeds and feed_url not in selected_feeds:
+            logger.info(f"Skipping feed {feed_url} - not in selected feeds")
+            continue
+            
         try:
             # Set a timeout for feed processing to prevent hanging
             feed_content = fetch_feed(feed_url)

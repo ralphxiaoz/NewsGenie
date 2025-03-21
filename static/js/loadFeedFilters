@@ -1,0 +1,56 @@
+// Load available feeds for filtering
+function loadFeedFilters() {
+    const feedFilterContainer = document.getElementById('feedFilterContainer');
+    
+    fetch('/api/feeds')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!Array.isArray(data.feeds) || data.feeds.length === 0) {
+                feedFilterContainer.innerHTML = `
+                    <div class="text-muted text-center py-2">
+                        No feeds available. Add some in the "Manage RSS Feeds" tab.
+                    </div>
+                `;
+                return;
+            }
+            
+            let filterHtml = '<div class="feed-filter-list">';
+            data.feeds.forEach(feed => {
+                const description = feed.description ? feed.description : 'No description';
+                filterHtml += `
+                    <div class="form-check feed-filter-item mb-2">
+                        <input class="form-check-input feed-filter-checkbox" type="checkbox" 
+                            id="feed-${encodeURIComponent(feed.url)}" 
+                            data-url="${feed.url}" 
+                            data-title="${feed.title}"
+                            checked>
+                        <label class="form-check-label feed-filter-label" for="feed-${encodeURIComponent(feed.url)}">
+                            <span class="feed-title">${feed.title}</span>
+                            ${description ? `<span class="feed-filter-description-inline"> | ${description}</span>` : ''}
+                        </label>
+                    </div>
+                `;
+            });
+            filterHtml += '</div>';
+            
+            feedFilterContainer.innerHTML = filterHtml;
+            
+            // Add event listeners to checkboxes
+            document.querySelectorAll('.feed-filter-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', applyFeedFilters);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading feed filters:', error);
+            feedFilterContainer.innerHTML = `
+                <div class="alert alert-warning">
+                    Error loading feeds. <button class="btn btn-sm btn-link" onclick="loadFeedFilters()">Try again</button>
+                </div>
+            `;
+        });
+} 

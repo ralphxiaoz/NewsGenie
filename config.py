@@ -12,7 +12,7 @@ FLASK_DEBUG = os.getenv('FLASK_DEBUG', 'True').lower() == 'true'
 FLASK_SECRET_KEY = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
 
 # File paths
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 FEEDS_FILE = os.path.join(DATA_DIR, 'feeds.json')
 
 # Ensure data directory exists

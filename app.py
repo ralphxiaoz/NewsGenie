@@ -2,11 +2,18 @@
 
 from flask import Flask, render_template, request, jsonify
 import anthropic
+import os
 
-from config import FLASK_DEBUG, FLASK_SECRET_KEY, PAGINATION
+from config import FLASK_DEBUG, FLASK_SECRET_KEY, PAGINATION, DATA_DIR, FEEDS_FILE
 from utils import logger, setup_nltk
 from search import search_feeds
-from feed import get_feed_stories, add_feed, remove_feed, load_feeds
+from feed import get_feed_stories, add_feed, remove_feed, load_feeds, save_feeds
+
+# Print debug info about data file location
+print(f"DATA_DIR path: {DATA_DIR}")
+print(f"FEEDS_FILE path: {FEEDS_FILE}")
+print(f"DATA_DIR exists: {os.path.exists(DATA_DIR)}")
+print(f"FEEDS_FILE exists: {os.path.exists(FEEDS_FILE)}")
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -74,6 +81,44 @@ def delete_feed(url):
         logger.error(f"Error removing feed: {str(e)}", exc_info=True)
         return jsonify({'error': 'Failed to remove feed'}), 500
 
+@app.route('/api/feeds/<path:url>/description', methods=['PUT'])
+def update_feed_description(url):
+    """Update the description of a feed"""
+    try:
+        data = request.json
+        if not data:
+            logger.warning("Update feed description request received with no JSON data")
+            return jsonify({'error': 'No JSON data provided'}), 400
+            
+        description = data.get('description', '')
+        
+        # Load existing feeds
+        feeds = load_feeds()
+        
+        # Find and update the matching feed
+        found = False
+        for feed in feeds:
+            if feed['url'] == url:
+                feed['description'] = description
+                found = True
+                break
+                
+        if not found:
+            logger.warning(f"Feed not found for URL: '{url}'")
+            return jsonify({'error': 'Feed not found', 'success': False}), 404
+            
+        # Save the updated feeds
+        if save_feeds(feeds):
+            logger.info(f"Updated description for feed URL: '{url}'")
+            return jsonify({'message': 'Feed description updated successfully', 'success': True})
+        else:
+            logger.error(f"Failed to save feeds after updating description for '{url}'")
+            return jsonify({'error': 'Failed to save feed description', 'success': False}), 500
+            
+    except Exception as e:
+        logger.error(f"Error updating feed description: {str(e)}", exc_info=True)
+        return jsonify({'error': 'Failed to update feed description'}), 500
+
 @app.route('/api/stories', methods=['GET'])
 def get_stories():
     """Get stories with pagination"""
@@ -81,13 +126,20 @@ def get_stories():
         page = request.args.get('page', PAGINATION['default_page'], type=int)
         items_per_page = request.args.get('items_per_page', PAGINATION['stories_per_page'], type=int)
         
+        # Get feed filter parameters
+        feed_filter = request.args.get('feeds', '')
+        selected_feeds = feed_filter.split(',') if feed_filter else []
+        
         if page < 1:
             page = 1
         if items_per_page < 1:
             items_per_page = PAGINATION['stories_per_page']
             
         logger.info(f"Getting stories for page {page} with {items_per_page} items per page")
-        stories, total = get_feed_stories(page, items_per_page)
+        if selected_feeds:
+            logger.info(f"Filtering by feeds: {', '.join(selected_feeds)}")
+            
+        stories, total = get_feed_stories(page, items_per_page, selected_feeds)
         
         return jsonify({
             'stories': stories,
